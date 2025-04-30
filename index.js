@@ -18,6 +18,7 @@ async function checkData() {
     for(const element of sc_data.sc_ids) {
         try {
             console.log("starting search");
+            console.log(`https://api-v2.soundcloud.com/users/${element}/tracks?representation=&client_id=${sc_data.sc_client_id}&limit=1&offset=0&linked_partitioning=1`);
             let data = await(await fetch(`https://api-v2.soundcloud.com/users/${element}/tracks?representation=&client_id=${sc_data.sc_client_id}&limit=1&offset=0&linked_partitioning=1`)).json();
             console.log("finished fetch");
             if(!user_data[element]) {
@@ -26,7 +27,10 @@ async function checkData() {
                     "song_url": ""
                 }
             }
-            if(user_data[element]["song_url"] != data["collection"][0]["permalink_url"] && (new Date() - new Date(data["collection"][0]["release_date"])) < 604800000) {
+            if(!data["collection"][0]) {
+                return;
+            }
+            if(user_data[element]["song_url"] != data["collection"][0]["permalink_url"]) {
                 if(data["collection"][0]["media"]["transcodings"][0]["url"].includes("encrypted")) {
                     sc_data.channels.forEach(element => {
                         const channel = client.channels.cache.get(element);
@@ -70,7 +74,7 @@ async function checkData() {
                             .setTitle(`${data["collection"][0]["publisher_metadata"]["artist"]} dropped`)
                             .setURL(data["collection"][0]["permalink_url"])
                             .setThumbnail(data["collection"][0]["artwork_url"].replace("large", "t1080x1080").replace(".png", ".jpg"))
-                            .setDescription(`**SOUNDCLOUD EXCLUSIVE**, music file is not encrypted\n${data["collection"][0]["title"]} by ${data["collection"][0]["publisher_metadata"]["artist"]}\n${data["collection"][0]["permalink_url"]}\n<t:${Math.floor(new Date(data["collection"][0]["release_date"]).getTime() / 1000)}:R>`)
+                            .setDescription(`**SOUNDCLOUD EXCLUSIVE**, music file is not encrypted\n${data["collection"][0]["title"]} by ${data["collection"][0]["publisher_metadata"]["artist"]}\n${data["collection"][0]["permalink_url"]}\n<t:${Math.floor(new Date(data["collection"][0]["created_at"]).getTime() / 1000)}:R>`)
                         channel.send({ content: "@everyone", embeds: [ embed ], files: [`tmp/${data["collection"][0]["publisher_metadata"]["artist"]} - ${data["collection"][0]["title"]}.mp3`]});
                     });
                     user_data[element]["song_url"] = data["collection"][0]["permalink_url"];
@@ -85,6 +89,6 @@ async function checkData() {
 client.login(process.env.TOKEN);
 client.once(Events.ClientReady, async readyClient => {
 	console.log(`Ready! Logged in as ${readyClient.user.tag}`);
-    setInterval(await checkData, 90000);
-    // checkData();
+    // setInterval(await checkData, 90000);
+    checkData();
 });
