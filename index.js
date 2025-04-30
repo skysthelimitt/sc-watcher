@@ -89,6 +89,6 @@ async function checkData() {
 client.login(process.env.TOKEN);
 client.once(Events.ClientReady, async readyClient => {
 	console.log(`Ready! Logged in as ${readyClient.user.tag}`);
-    // setInterval(await checkData, 90000);
-    checkData();
+    setInterval(await checkData, 90000);
+    // checkData();
 });
