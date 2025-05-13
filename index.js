@@ -30,14 +30,14 @@ async function checkData() {
             if(!data["collection"][0]) {
                 return;
             }
-            if(user_data[element]["song_url"] != data["collection"][0]["permalink_url"] && (new Date() - new Date(data["collection"][0]["release_date"])) < 604800000) {
+            if(user_data[element]["song_url"] != data["collection"][0]["permalink_url"] && (new Date() - new Date(data["collection"][0]["created_at"])) < 604800000) {
                 if(data["collection"][0]["media"]["transcodings"][0]["url"].includes("encrypted")) {
                     sc_data.channels.forEach(element => {
                         const channel = client.channels.cache.get(element);
                         let embed = new EmbedBuilder()
                             .setTitle(`${data["collection"][0]["publisher_metadata"]["artist"]} dropped`)
                             .setURL(data["collection"][0]["permalink_url"])
-                            .setThumbnail(data["collection"][0]["artwork_url"].replace("large", "t1080x1080").replace(".png", ".jpg"))
+                            .setThumbnail(data["collection"][0]["artwork_url"].replace("large", "original").replace(".png", ".jpg"))
                             .setDescription(`**NOT SOUNDCLOUD EXCLUSIVE**, music file is encrypted\n${data["collection"][0]["title"]} by ${data["collection"][0]["publisher_metadata"]["artist"]}\n${data["collection"][0]["permalink_url"]}\n<t:${Math.floor(new Date(data["collection"][0]["release_date"]).getTime() / 1000)}:R>`)
                         channel.send({ content: "@everyone", embeds: [ embed ] });
                     });
@@ -73,7 +73,7 @@ async function checkData() {
                         let embed = new EmbedBuilder()
                             .setTitle(`${data["collection"][0]["publisher_metadata"]["artist"]} dropped`)
                             .setURL(data["collection"][0]["permalink_url"])
-                            .setThumbnail(data["collection"][0]["artwork_url"].replace("large", "t1080x1080").replace(".png", ".jpg"))
+                            .setThumbnail(data["collection"][0]["artwork_url"].replace("large", "original").replace(".png", ".jpg"))
                             .setDescription(`**SOUNDCLOUD EXCLUSIVE**, music file is not encrypted\n${data["collection"][0]["title"]} by ${data["collection"][0]["publisher_metadata"]["artist"]}\n${data["collection"][0]["permalink_url"]}\n<t:${Math.floor(new Date(data["collection"][0]["created_at"]).getTime() / 1000)}:R>`)
                         channel.send({ content: "@everyone", embeds: [ embed ], files: [`tmp/${data["collection"][0]["publisher_metadata"]["artist"]} - ${data["collection"][0]["title"].replaceAll("/", "_")}.mp3`]});
                     });
