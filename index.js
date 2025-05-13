@@ -30,7 +30,7 @@ async function checkData() {
             if(!data["collection"][0]) {
                 return;
             }
-            if(user_data[element]["song_url"] != data["collection"][0]["permalink_url"]) {
+            if(user_data[element]["song_url"] != data["collection"][0]["permalink_url"] && (new Date() - new Date(data["collection"][0]["release_date"])) < 604800000) {
                 if(data["collection"][0]["media"]["transcodings"][0]["url"].includes("encrypted")) {
                     sc_data.channels.forEach(element => {
                         const channel = client.channels.cache.get(element);
@@ -48,7 +48,7 @@ async function checkData() {
                     let streamingURL = await(await fetch(data["collection"][0]["media"]["transcodings"][0]["url"] + "?client_id=" + sc_data.sc_client_id)).json();
                     await $`ffmpeg -i "${streamingURL["url"]}" tmp/${uuid}.mp3`;
                     console.log("ffmpeg finished downloading");
-                    let cover = await(await fetch(data["collection"][0]["artwork_url"].replace("large", "t1080x1080").replace(".png", ".jpg"))).arrayBuffer();
+                    let cover = await(await fetch(data["collection"][0]["artwork_url"].replace("large", "original").replace(".png", ".jpg"))).arrayBuffer();
                     console.log("fetched album cover");
                     let music = fs.readFileSync(`tmp/${uuid}.mp3`);
                     const mp3tag = new MP3Tag(music, true);
@@ -66,7 +66,7 @@ async function checkData() {
                         }
                     ];
                     mp3tag.save();
-                    fs.writeFileSync(`tmp/${data["collection"][0]["publisher_metadata"]["artist"]} - ${data["collection"][0]["title"]}.mp3`, mp3tag.buffer)
+                    fs.writeFileSync(`tmp/${data["collection"][0]["publisher_metadata"]["artist"]} - ${data["collection"][0]["title"].replaceAll("/", "_")}.mp3`, mp3tag.buffer)
                     console.log("saved tags");
                     sc_data.channels.forEach(element => {
                         const channel = client.channels.cache.get(element);
@@ -75,7 +75,7 @@ async function checkData() {
                             .setURL(data["collection"][0]["permalink_url"])
                             .setThumbnail(data["collection"][0]["artwork_url"].replace("large", "t1080x1080").replace(".png", ".jpg"))
                             .setDescription(`**SOUNDCLOUD EXCLUSIVE**, music file is not encrypted\n${data["collection"][0]["title"]} by ${data["collection"][0]["publisher_metadata"]["artist"]}\n${data["collection"][0]["permalink_url"]}\n<t:${Math.floor(new Date(data["collection"][0]["created_at"]).getTime() / 1000)}:R>`)
-                        channel.send({ content: "@everyone", embeds: [ embed ], files: [`tmp/${data["collection"][0]["publisher_metadata"]["artist"]} - ${data["collection"][0]["title"]}.mp3`]});
+                        channel.send({ content: "@everyone", embeds: [ embed ], files: [`tmp/${data["collection"][0]["publisher_metadata"]["artist"]} - ${data["collection"][0]["title"].replaceAll("/", "_")}.mp3`]});
                     });
                     user_data[element]["song_url"] = data["collection"][0]["permalink_url"];
                 }
